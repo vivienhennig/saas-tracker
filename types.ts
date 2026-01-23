@@ -18,7 +18,8 @@ export const TOOL_CATEGORIES = [
   'HR',
   'Finance',
   'Sales',
-  'Administration'
+  'Administration',
+  'Infrastructure',
 ] as const;
 
 export type ToolCategory = typeof TOOL_CATEGORIES[number];
