@@ -26,7 +26,8 @@ export const suggestToolDetails = async (toolName: string) => {
         }
       }
     });
-    return JSON.parse(response.text.trim());
+    const text = response.text || "{}";
+    return JSON.parse(text.trim());
   } catch (error) {
     console.error("KI-Vorschlag fehlgeschlagen:", error);
     return null;
@@ -66,7 +67,8 @@ export const analyzeInvoice = async (base64Data: string, mimeType: string) => {
         }
       }
     });
-    return JSON.parse(response.text.trim());
+    const text = response.text || "{}";
+    return JSON.parse(text.trim());
   } catch (error) {
     console.error("Rechnungs-Analyse fehlgeschlagen:", error);
     return null;
@@ -75,9 +77,9 @@ export const analyzeInvoice = async (base64Data: string, mimeType: string) => {
 
 export const auditStack = async (subscriptions: Subscription[]) => {
   if (!process.env.API_KEY) return "Analyse derzeit nicht möglich.";
-  
+
   const toolList = subscriptions.map(s => `- ${s.name} (${s.category}): ${s.monthlyCost}€/Monat`).join('\n');
-  
+
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",

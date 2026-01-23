@@ -60,7 +60,7 @@ const App: React.FC = () => {
     setIsAuditModalOpen(true);
     setLoadingAudit(true);
     const result = await auditStack(subscriptions);
-    setAuditResult(result);
+    setAuditResult(result ?? null);
     setLoadingAudit(false);
   };
 
@@ -70,9 +70,9 @@ const App: React.FC = () => {
 
     return subscriptions.filter(s => {
       const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          s.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (s.owner && s.owner.toLowerCase().includes(searchTerm.toLowerCase()));
-      
+        s.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (s.owner && s.owner.toLowerCase().includes(searchTerm.toLowerCase()));
+
       let matchesTab = true;
       if (activeTab === 'Aktiv') matchesTab = s.status === SubscriptionStatus.ACTIVE || s.status === SubscriptionStatus.TRIAL;
       if (activeTab === 'Inaktiv') matchesTab = s.status === SubscriptionStatus.INACTIVE;
@@ -142,9 +142,9 @@ const App: React.FC = () => {
               <p className="text-[10px] text-k5-digitalBlueLight uppercase tracking-[0.2em] font-bold">Integrierte Tool-Intelligenz</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={handleRunAudit}
               className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-k5-lime hover:text-k5-deepBlue border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-k5-lime shadow-lg"
             >
@@ -170,7 +170,7 @@ const App: React.FC = () => {
             <h2 className="text-4xl font-black text-k5-deepBlue tracking-tight mb-2">Bestandsübersicht</h2>
             <p className="text-k5-sand font-medium leading-relaxed">Zentrales Management aller Unternehmens-Lizenzen. Vollautomatisch synchronisiert.</p>
           </div>
-          
+
           <div className="relative">
             <input
               type="text"
@@ -186,7 +186,7 @@ const App: React.FC = () => {
         </div>
 
         <StatsCards stats={stats} />
-        
+
         <Analytics subscriptions={subscriptions} />
 
         <div className="mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -195,11 +195,10 @@ const App: React.FC = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
-                  activeTab === tab 
-                    ? 'bg-k5-deepBlue text-white shadow-lg' 
+                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${activeTab === tab
+                    ? 'bg-k5-deepBlue text-white shadow-lg'
                     : 'text-k5-deepBlue/50 hover:text-k5-deepBlue hover:bg-white/50'
-                }`}
+                  }`}
               >
                 {tab}
                 {tab === 'Demnächst fällig' && stats.upcomingRenewals > 0 && (
@@ -221,26 +220,26 @@ const App: React.FC = () => {
         </div>
 
         <div className={loading ? 'opacity-40 pointer-events-none' : ''}>
-          <SubscriptionTable 
-            subscriptions={filteredSubs} 
+          <SubscriptionTable
+            subscriptions={filteredSubs}
             onDelete={handleDelete}
             onEdit={handleEdit}
           />
         </div>
       </main>
 
-      <AddToolModal 
-        isOpen={isModalOpen} 
-        onClose={handleCloseModal} 
-        onAdd={handleAdd} 
+      <AddToolModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onAdd={handleAdd}
         onUpdate={handleUpdate}
         initialData={editingTool}
       />
-      <StackAuditModal 
-        isOpen={isAuditModalOpen} 
-        onClose={() => setIsAuditModalOpen(false)} 
-        result={auditResult} 
-        loading={loadingAudit} 
+      <StackAuditModal
+        isOpen={isAuditModalOpen}
+        onClose={() => setIsAuditModalOpen(false)}
+        result={auditResult}
+        loading={loadingAudit}
       />
     </div>
   );
