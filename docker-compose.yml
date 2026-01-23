@@ -1,0 +1,17 @@
+
+services:
+  saas-tracker:
+    build:
+      context: .
+      args:
+        - API_KEY=${API_KEY}
+        - SUPABASE_URL=${SUPABASE_URL}
+        - SUPABASE_KEY=${SUPABASE_KEY}
+    container_name: k5-saas-tracker
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - API_KEY=${API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
