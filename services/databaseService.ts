@@ -1,13 +1,17 @@
-
 import { Subscription } from '../types';
 
-// Diese Variablen können beim Build-Prozess gesetzt werden, um eine echte Cloud-DB zu nutzen.
-// Wenn sie fehlen, nutzt die App automatisch den lokalen Speicher.
-const CLOUD_URL = (process.env as any).SUPABASE_URL || '';
-const CLOUD_KEY = (process.env as any).SUPABASE_KEY || '';
+// Wir nutzen hier import.meta.env (Standard für Vite) statt process.env
+const CLOUD_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const CLOUD_KEY = import.meta.env.VITE_SUPABASE_KEY || '';
 const LOCAL_STORAGE_KEY = 'saasstack_subscriptions';
 
 const isCloudEnabled = !!(CLOUD_URL && CLOUD_KEY);
+
+// Helper: Remove fields that don't exist in Supabase schema
+const sanitizeForDb = (sub: any) => {
+  const { yearlyCost, owner, ...rest } = sub;
+  return rest;
+};
 
 export const databaseService = {
   async fetchAll(): Promise<Subscription[]> {
@@ -42,7 +46,7 @@ export const databaseService = {
             'Content-Type': 'application/json',
             'Prefer': 'return=representation'
           },
-          body: JSON.stringify(sub)
+          body: JSON.stringify(sanitizeForDb(sub))
         });
         if (response.ok) {
           const data = await response.json();
@@ -71,7 +75,7 @@ export const databaseService = {
             'Content-Type': 'application/json',
             'Prefer': 'return=representation'
           },
-          body: JSON.stringify(updates)
+          body: JSON.stringify(sanitizeForDb(updates))
         });
         if (response.ok) {
           const data = await response.json();
@@ -112,6 +116,6 @@ export const databaseService = {
   }
 };
 
-// Dummy-Funktion für Kompatibilität mit bestehenden Imports
+// Dummy-Funktion für Kompatibilität
 export const getDbConfig = () => ({ url: '', apiKey: '', isConnected: isCloudEnabled });
-export const saveDbConfig = () => {};
+export const saveDbConfig = () => { };

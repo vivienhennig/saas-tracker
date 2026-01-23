@@ -1,31 +1,39 @@
-
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { TOOL_CATEGORIES, Subscription } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// WICHTIG: Zugriff über import.meta.env für Vite!
+const apiKey = import.meta.env.VITE_API_KEY || '';
+
+// Initialisierung nur, wenn ein Key da ist, um Abstürze beim Laden zu verhindern
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 export const suggestToolDetails = async (toolName: string) => {
-  if (!process.env.API_KEY) return null;
+  if (!ai) {
+    console.error("Gemini API Key fehlt.");
+    return null;
+  }
+
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.0-flash",
       contents: `Gib eine Kategorisierung und eine kurze Beschreibung für das Software-Tool namens: ${toolName} auf Deutsch an. 
       Wähle für die Kategorie UNBEDINGT einen der folgenden Werte aus: ${TOOL_CATEGORIES.join(', ')}.
       Schätze die monatlichen Kosten in EURO.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
-          type: Type.OBJECT,
+          type: "object",
           properties: {
-            category: { type: Type.STRING },
-            description: { type: Type.STRING },
-            estimatedMonthlyCost: { type: Type.NUMBER },
-            url: { type: Type.STRING }
+            category: { type: "string" },
+            description: { type: "string" },
+            estimatedMonthlyCost: { type: "number" },
+            url: { type: "string" }
           },
           required: ["category", "description", "estimatedMonthlyCost", "url"]
         }
       }
     });
+
     const text = response.text || "{}";
     return JSON.parse(text.trim());
   } catch (error) {
@@ -35,7 +43,7 @@ export const suggestToolDetails = async (toolName: string) => {
 };
 
 export const analyzeInvoice = async (base64Data: string, mimeType: string) => {
-  if (!process.env.API_KEY) return null;
+  if (!ai) return null;
   try {
     const imagePart = {
       inlineData: {
@@ -50,23 +58,24 @@ export const analyzeInvoice = async (base64Data: string, mimeType: string) => {
     };
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.0-flash",
       contents: { parts: [imagePart, textPart] },
       config: {
         responseMimeType: "application/json",
         responseSchema: {
-          type: Type.OBJECT,
+          type: "object",
           properties: {
-            name: { type: Type.STRING },
-            category: { type: Type.STRING },
-            monthlyCost: { type: Type.NUMBER },
-            renewalDate: { type: Type.STRING, description: "Datum im Format YYYY-MM-DD" },
-            description: { type: Type.STRING }
+            name: { type: "string" },
+            category: { type: "string" },
+            monthlyCost: { type: "number" },
+            renewalDate: { type: "string", description: "Datum im Format YYYY-MM-DD" },
+            description: { type: "string" }
           },
           required: ["name", "category", "monthlyCost", "renewalDate"]
         }
       }
     });
+
     const text = response.text || "{}";
     return JSON.parse(text.trim());
   } catch (error) {
@@ -76,13 +85,13 @@ export const analyzeInvoice = async (base64Data: string, mimeType: string) => {
 };
 
 export const auditStack = async (subscriptions: Subscription[]) => {
-  if (!process.env.API_KEY) return "Analyse derzeit nicht möglich.";
+  if (!ai) return "Analyse derzeit nicht möglich (Kein API Key).";
 
   const toolList = subscriptions.map(s => `- ${s.name} (${s.category}): ${s.monthlyCost}€/Monat`).join('\n');
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.0-flash",
       contents: `Du bist ein erfahrener IT-Einkäufer und SaaS-Optimierer. Analysiere folgende Liste von Firmen-Software auf Überschneidungen, Einsparpotenziale und Redundanzen (z.B. zwei Videokonferenz-Tools). Gib konkrete, kurze Empfehlungen auf Deutsch:
       
       ${toolList}
@@ -92,6 +101,7 @@ export const auditStack = async (subscriptions: Subscription[]) => {
       ### 💡 Optimierungschancen
       ### 💶 Geschätztes Sparpotenzial`,
     });
+
     return response.text;
   } catch (error) {
     console.error("Stack Audit fehlgeschlagen:", error);
