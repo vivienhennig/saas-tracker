@@ -8,31 +8,31 @@ export enum SubscriptionStatus {
 }
 
 export const TOOL_CATEGORIES = [
-  'Eventmanagement',
-  'Marketing',
-  'Automation',
+  'Administration',
   'Audio & Video',
-  'Podcast',
-  'Webseite',
+  'Automation',
+  'Eventmanagement',
+  'Finance',
   'Grafik',
   'HR',
-  'Finance',
-  'Sales',
-  'Administration',
   'Infrastructure',
+  'Marketing',
+  'Podcast',
+  'Sales',
+  'Webseite',
 ] as const;
 
 export type ToolCategory = typeof TOOL_CATEGORIES[number];
 
 export const OWNERS = [
-  'Seline Neuber',
+  'Bella Wondra',
+  'Christiane Lübke',
   'Esther Schwan',
+  'Manuel Winkler',
+  'Sven Rittau',
   'Verena Lindner',
   'Verena Schlüpmann',
-  'Sven Rittau',
-  'Bella Wondra',
-  'Manuel Winkler',
-  'Christiane Lübke',
+  'Seline Neuber',
   'Vivien Hennig'
 ] as const;
 
