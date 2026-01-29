@@ -1,52 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>K5 SaaSStack - Tool-Verwaltung für Unternehmen</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              k5: {
-                digitalBlue: '#092AFF',
-                digitalBlueLight: '#00a5e5',
-                deepBlue: '#052364',
-                lime: '#E9FF86',
-                limeLight: '#F3FCCF',
-                sand: '#C5B8AE',
-              }
-            },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            },
-            backgroundImage: {
-              'k5-glow-blue': 'linear-gradient(135deg, #092AFF 0%, #00a5e5 100%)',
-              'k5-glow-deep': 'linear-gradient(135deg, #052364 0%, #092AFF 100%)',
-            }
-          }
-        }
-      }
-    </script>
-    <style>
-      body {
-        background-color: #fcfbf9;
-        color: #052364;
-      }
-      .k5-card {
-        background: white;
-        border: 1px solid #C5B8AE33;
-        box-shadow: 0 4px 20px -5px rgba(5, 35, 100, 0.05);
-      }
-      .k5-input-focus:focus {
-        border-color: #092AFF;
-        box-shadow: 0 0 0 4px rgba(9, 42, 255, 0.1);
-      }
-    </style>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>K5 SaaSStack - Tool-Verwaltung für Unternehmen</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
+    rel="stylesheet">
   <script type="importmap">
 {
   "imports": {
@@ -59,10 +20,11 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
 </html>

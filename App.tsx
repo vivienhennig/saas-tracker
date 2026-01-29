@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Subscription, SubscriptionStatus, Stats } from './types';
+import { Subscription, SubscriptionStatus, Stats, TOOL_CATEGORIES, OWNERS } from './types';
 import { databaseService } from './services/databaseService';
 import { StatsCards } from './components/StatsCards';
 import { SubscriptionTable } from './components/SubscriptionTable';
@@ -21,6 +21,8 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<FilterTab>('Alle');
+  const [selectedCategory, setSelectedCategory] = useState<string>('Alle');
+  const [selectedOwner, setSelectedOwner] = useState<string>('Alle');
 
   const loadData = async () => {
     setLoading(true);
@@ -69,9 +71,14 @@ const App: React.FC = () => {
     const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
     return subscriptions.filter(s => {
-      const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (s.owner && s.owner.toLowerCase().includes(searchTerm.toLowerCase()));
+      const toolName = (s.name || '').toLowerCase();
+      const toolCategory = (s.category || '').toLowerCase();
+      const toolOwner = (s.owner || '').toLowerCase();
+      const search = searchTerm.toLowerCase();
+
+      const matchesSearch = toolName.includes(search) ||
+        toolCategory.includes(search) ||
+        toolOwner.includes(search);
 
       let matchesTab = true;
       if (activeTab === 'Aktiv') matchesTab = s.status === SubscriptionStatus.ACTIVE || s.status === SubscriptionStatus.TRIAL;
@@ -81,9 +88,21 @@ const App: React.FC = () => {
         matchesTab = renewal >= now && renewal <= sevenDaysFromNow;
       }
 
-      return matchesSearch && matchesTab;
+      const matchesCategory = selectedCategory === 'Alle' || s.category === selectedCategory;
+
+      // Special handling for Vivien/Vivi to avoid empty list for her
+      let matchesOwner = selectedOwner === 'Alle';
+      if (!matchesOwner) {
+        if (selectedOwner === 'Vivien Hennig') {
+          matchesOwner = s.owner === 'Vivien Hennig' || s.owner === 'Vivi';
+        } else {
+          matchesOwner = s.owner === selectedOwner;
+        }
+      }
+
+      return matchesSearch && matchesTab && matchesCategory && matchesOwner;
     });
-  }, [subscriptions, searchTerm, activeTab]);
+  }, [subscriptions, searchTerm, activeTab, selectedCategory, selectedOwner]);
 
   const handleAdd = async (newSub: Omit<Subscription, 'id'>) => {
     try {
@@ -131,14 +150,11 @@ const App: React.FC = () => {
     <div className="min-h-screen">
       <header className="bg-k5-deepBlue border-b border-k5-digitalBlue/20 sticky top-0 z-40 shadow-xl shadow-k5-deepBlue/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-k5-glow-blue rounded-lg flex items-center justify-center shadow-lg shadow-k5-digitalBlue/30">
-              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-xl font-black text-white tracking-tighter uppercase leading-none">K5 SaaSStack</h1>
+          <div className="flex items-center gap-4">
+            <img src="/logo-white.png" alt="K5 Logo" className="h-8 w-auto object-contain" />
+            <div className="h-8 w-px bg-white/10 hidden sm:block"></div>
+            <div className="hidden sm:block">
+              <h1 className="text-xl font-black text-white tracking-tighter uppercase leading-none">SaaSStack</h1>
               <p className="text-[10px] text-k5-digitalBlueLight uppercase tracking-[0.2em] font-bold">Integrierte Tool-Intelligenz</p>
             </div>
           </div>
@@ -146,7 +162,7 @@ const App: React.FC = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={handleRunAudit}
-              className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-k5-lime hover:text-k5-deepBlue border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-k5-lime shadow-lg"
+              className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-k5-lime hover:text-k5-deepBlue border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-white shadow-lg"
             >
               <span>✨ Stack Audit</span>
             </button>
@@ -170,52 +186,92 @@ const App: React.FC = () => {
             <h2 className="text-4xl font-black text-k5-deepBlue tracking-tight mb-2">Bestandsübersicht</h2>
             <p className="text-k5-sand font-medium leading-relaxed">Zentrales Management aller Unternehmens-Lizenzen. Vollautomatisch synchronisiert.</p>
           </div>
-
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Suchen..."
-              className="pl-11 pr-4 py-3 bg-white border border-k5-sand/30 rounded-xl text-sm focus:ring-2 focus:ring-k5-digitalBlue outline-none w-72 shadow-sm transition-all"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <svg className="w-5 h-5 text-k5-sand absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
         </div>
 
         <StatsCards stats={stats} />
 
         <Analytics subscriptions={subscriptions} />
 
-        <div className="mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex bg-k5-sand/10 p-1.5 rounded-2xl">
-            {tabs.map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${activeTab === tab
+        <div className="mb-8 space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-6">
+            <div className="flex bg-k5-sand/10 p-1.5 rounded-2xl">
+              {tabs.map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${activeTab === tab
                     ? 'bg-k5-deepBlue text-white shadow-lg'
                     : 'text-k5-deepBlue/50 hover:text-k5-deepBlue hover:bg-white/50'
-                  }`}
-              >
-                {tab}
-                {tab === 'Demnächst fällig' && stats.upcomingRenewals > 0 && (
-                  <span className="ml-2 bg-red-500 text-white px-1.5 py-0.5 rounded-full text-[8px] animate-pulse">
-                    {stats.upcomingRenewals}
-                  </span>
-                )}
+                    }`}
+                >
+                  {tab}
+                  {tab === 'Demnächst fällig' && stats.upcomingRenewals > 0 && (
+                    <span className="ml-2 bg-red-500 text-white px-1.5 py-0.5 rounded-full text-[8px] animate-pulse">
+                      {stats.upcomingRenewals}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-bold text-k5-sand uppercase tracking-widest">{filteredSubs.length} Tools</span>
+              <button onClick={loadData} className="p-2 text-k5-digitalBlue hover:bg-k5-digitalBlue/5 rounded-full transition-all">
+                <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
               </button>
-            ))}
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-xs font-bold text-k5-sand uppercase tracking-widest">{filteredSubs.length} Tools</span>
-            <button onClick={loadData} className="p-2 text-k5-digitalBlue hover:bg-k5-digitalBlue/5 rounded-full transition-all">
-              <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+
+          <div className="flex flex-wrap gap-4 items-center bg-k5-sand/5 p-4 rounded-2xl border border-k5-sand/10">
+            <div className="relative">
+              <select
+                className="pl-4 pr-10 py-3 bg-white border border-k5-sand/30 rounded-xl text-sm focus:ring-2 focus:ring-k5-digitalBlue outline-none shadow-sm appearance-none min-w-[180px] font-bold text-k5-deepBlue"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                <option value="Alle">Kategorie: Alle</option>
+                {TOOL_CATEGORIES.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-k5-sand">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            <div className="relative">
+              <select
+                className="pl-4 pr-10 py-3 bg-white border border-k5-sand/30 rounded-xl text-sm focus:ring-2 focus:ring-k5-digitalBlue outline-none shadow-sm appearance-none min-w-[180px] font-bold text-k5-deepBlue"
+                value={selectedOwner}
+                onChange={(e) => setSelectedOwner(e.target.value)}
+              >
+                <option value="Alle">Owner: Alle</option>
+                {OWNERS.map(owner => (
+                  <option key={owner} value={owner}>{owner}</option>
+                ))}
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-k5-sand">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            <div className="relative flex-1 min-w-[240px]">
+              <input
+                type="text"
+                placeholder="In dieser Liste suchen..."
+                className="pl-11 pr-4 py-3 bg-white border border-k5-sand/30 rounded-xl text-sm focus:ring-2 focus:ring-k5-digitalBlue outline-none w-full shadow-sm transition-all font-bold text-k5-deepBlue"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <svg className="w-5 h-5 text-k5-sand absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-            </button>
+            </div>
           </div>
         </div>
 

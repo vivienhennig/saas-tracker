@@ -9,8 +9,8 @@ services:
     container_name: k5-saas-tracker
     restart: always
     ports:
-      - "10.8.0.2:8086:80"
-      #- "8086:80"
+      #- "10.8.0.2:8086:80"
+      - "8086:80"
     networks:
       - k5-global-network
 

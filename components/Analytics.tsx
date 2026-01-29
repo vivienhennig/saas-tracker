@@ -37,11 +37,17 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions }) => {
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip 
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(5,35,100,0.1)', fontWeight: 'bold' }}
-                formatter={(value) => `${value} €`} 
+              <Tooltip
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(5,35,100,0.1)', fontWeight: 'bold', color: '#052364' }}
+                itemStyle={{ color: '#052364' }}
+                formatter={(value) => `${value} €`}
               />
-              <Legend verticalAlign="bottom" height={36} iconType="circle" />
+              <Legend
+                verticalAlign="bottom"
+                height={36}
+                iconType="circle"
+                formatter={(value) => <span className="text-k5-deepBlue font-bold ml-1 text-xs">{value}</span>}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -58,10 +64,11 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions }) => {
             >
               <XAxis type="number" hide />
               <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 11, fontWeight: 900, fill: '#052364' }} axisLine={false} tickLine={false} />
-              <Tooltip 
-                cursor={{ fill: 'transparent' }} 
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(5,35,100,0.1)', fontWeight: 'bold' }}
-                formatter={(value) => `${value} €`} 
+              <Tooltip
+                cursor={{ fill: 'transparent' }}
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(5,35,100,0.1)', fontWeight: 'bold', color: '#052364' }}
+                itemStyle={{ color: '#052364' }}
+                formatter={(value) => `${value} €`}
               />
               <Bar dataKey="monthlyCost" fill="#092AFF" radius={[0, 8, 8, 0]} barSize={32} />
             </BarChart>

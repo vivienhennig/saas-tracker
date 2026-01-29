@@ -24,6 +24,20 @@ export const TOOL_CATEGORIES = [
 
 export type ToolCategory = typeof TOOL_CATEGORIES[number];
 
+export const OWNERS = [
+  'Seline Neuber',
+  'Esther Schwan',
+  'Verena Lindner',
+  'Verena Schlüpmann',
+  'Sven Rittau',
+  'Bella Wondra',
+  'Manuel Winkler',
+  'Christiane Lübke',
+  'Vivien Hennig'
+] as const;
+
+export type OwnerName = typeof OWNERS[number];
+
 export interface Subscription {
   id: string;
   name: string;
@@ -37,6 +51,7 @@ export interface Subscription {
   addedBy: string;
   owner: string; // Neue Eigenschaft
   url: string;
+  quantity?: number; // Neue Eigenschaft für mehrere Lizenzen
 }
 
 export interface Stats {

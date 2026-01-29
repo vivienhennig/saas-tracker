@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #fcfbf9;
+    color: #052364;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  .k5-card {
+    background: white;
+    border: 1px solid #C5B8AE33;
+    box-shadow: 0 4px 20px -5px rgba(5, 35, 100, 0.05);
+  }
+  .k5-input-focus:focus {
+    border-color: #092AFF;
+    box-shadow: 0 0 0 4px rgba(9, 42, 255, 0.1);
+  }
+}

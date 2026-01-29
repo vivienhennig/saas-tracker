@@ -80,8 +80,17 @@ export const SubscriptionTable: React.FC<SubscriptionTableProps> = ({ subscripti
                       </span>
                     </td>
                     <td className="px-8 py-6">
-                      <div className="text-sm font-black text-k5-deepBlue">{sub.monthlyCost.toLocaleString('de-DE')} € <span className="text-[10px] text-k5-sand">/MO</span></div>
-                      <div className="text-[10px] text-k5-digitalBlue font-bold uppercase tracking-tight">{sub.yearlyCost.toLocaleString('de-DE')} € jährlich</div>
+                      <div className="text-sm font-black text-k5-deepBlue">
+                        {(sub.monthlyCost || 0).toLocaleString('de-DE')} € <span className="text-[10px] text-k5-sand">/MO</span>
+                      </div>
+                      <div className="text-[10px] text-k5-digitalBlue font-bold uppercase tracking-tight">
+                        {(sub.yearlyCost || 0).toLocaleString('de-DE')} € jährlich
+                      </div>
+                      {sub.quantity && sub.quantity > 1 && (
+                        <div className="text-[9px] text-k5-sand font-bold mt-1 uppercase italic">
+                          {sub.quantity} Lizenzen à {((sub.monthlyCost || 0) / sub.quantity).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                        </div>
+                      )}
                     </td>
                     <td className="px-8 py-6">
                       <div className={`text-sm font-bold ${urgent ? 'text-red-600' : 'text-k5-deepBlue'}`}>

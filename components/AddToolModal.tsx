@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Subscription, SubscriptionStatus, TOOL_CATEGORIES } from '../types';
+import { Subscription, SubscriptionStatus, TOOL_CATEGORIES, OWNERS } from '../types';
 import { suggestToolDetails, analyzeInvoice } from '../services/geminiService';
 
 interface AddToolModalProps {
@@ -12,13 +12,17 @@ interface AddToolModalProps {
 }
 
 export const AddToolModal: React.FC<AddToolModalProps> = ({ isOpen, onClose, onAdd, onUpdate, initialData }) => {
-  const [formData, setFormData] = useState({
-    name: '', category: TOOL_CATEGORIES[0] as string, description: '', monthlyCost: 0, yearlyCost: 0,
-    renewalDate: '', cancellationDate: '', status: SubscriptionStatus.ACTIVE, addedBy: '', owner: '', url: ''
-  });
   const [loadingAI, setLoadingAI] = useState(false);
   const [loadingOCR, setLoadingOCR] = useState(false);
+  const [currency, setCurrency] = useState<'EUR' | 'USD'>('EUR');
+  const [priceMode, setPriceMode] = useState<'unit' | 'total'>('total');
+  const EXCHANGE_RATE = 0.93; // 1 USD = 0.93 EUR
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [formData, setFormData] = useState({
+    name: '', category: TOOL_CATEGORIES[0] as string, description: '', monthlyCost: 0, yearlyCost: 0,
+    renewalDate: '', cancellationDate: '', status: SubscriptionStatus.ACTIVE, addedBy: '', owner: '', url: '', quantity: 1
+  });
 
   useEffect(() => {
     if (initialData) {
@@ -33,12 +37,15 @@ export const AddToolModal: React.FC<AddToolModalProps> = ({ isOpen, onClose, onA
         status: initialData.status || SubscriptionStatus.ACTIVE,
         addedBy: initialData.addedBy || '',
         owner: initialData.owner || '',
-        url: initialData.url || ''
+        url: initialData.url || '',
+        quantity: initialData.quantity || 1
       });
+      setCurrency('EUR'); // Data is stored in EUR
+      setPriceMode('total'); // Default to total for editing existing data
     } else {
       setFormData({
         name: '', category: TOOL_CATEGORIES[0], description: '', monthlyCost: 0, yearlyCost: 0,
-        renewalDate: '', cancellationDate: '', status: SubscriptionStatus.ACTIVE, addedBy: '', owner: '', url: ''
+        renewalDate: '', cancellationDate: '', status: SubscriptionStatus.ACTIVE, addedBy: '', owner: '', url: '', quantity: 1
       });
     }
   }, [initialData, isOpen]);
@@ -62,6 +69,8 @@ export const AddToolModal: React.FC<AddToolModalProps> = ({ isOpen, onClose, onA
           renewalDate: result.renewalDate || prev.renewalDate,
           description: result.description || prev.description
         }));
+        setPriceMode('total'); // OCR usually gives total
+        setCurrency('EUR'); // Assuming EUR for now
       }
       setLoadingOCR(false);
     };
@@ -75,8 +84,8 @@ export const AddToolModal: React.FC<AddToolModalProps> = ({ isOpen, onClose, onA
     setLoadingAI(true);
     const suggestion = await suggestToolDetails(formData.name);
     if (suggestion) {
-      const matchedCategory = TOOL_CATEGORIES.includes(suggestion.category as any) 
-        ? suggestion.category 
+      const matchedCategory = TOOL_CATEGORIES.includes(suggestion.category as any)
+        ? suggestion.category
         : TOOL_CATEGORIES[0];
 
       setFormData(prev => ({
@@ -87,16 +96,44 @@ export const AddToolModal: React.FC<AddToolModalProps> = ({ isOpen, onClose, onA
         yearlyCost: suggestion.estimatedMonthlyCost * 12,
         url: suggestion.url
       }));
+      setPriceMode('total');
+      setCurrency('EUR');
     }
     setLoadingAI(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // The background calculation happens here:
+    // 1. Start with the raw input values
+    let finalMonthly = formData.monthlyCost;
+    let finalYearly = formData.yearlyCost;
+
+    // 2. Apply Quantity if in unit price mode
+    const qty = parseInt(formData.quantity as any) || 1;
+    if (priceMode === 'unit') {
+      finalMonthly *= qty;
+      finalYearly *= qty;
+    }
+
+    // 3. Apply Currency Conversion if in USD
+    if (currency === 'USD') {
+      finalMonthly *= EXCHANGE_RATE;
+      finalYearly *= EXCHANGE_RATE;
+    }
+
+    const submissionData = {
+      ...formData,
+      monthlyCost: parseFloat(finalMonthly.toFixed(2)),
+      yearlyCost: parseFloat(finalYearly.toFixed(2)),
+      quantity: qty
+    };
+
     if (initialData) {
-      onUpdate(initialData.id, formData);
+      onUpdate(initialData.id, submissionData);
     } else {
-      onAdd(formData);
+      onAdd(submissionData);
     }
     onClose();
   };
@@ -116,7 +153,7 @@ export const AddToolModal: React.FC<AddToolModalProps> = ({ isOpen, onClose, onA
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6 overflow-y-auto">
           {!initialData && (
-            <div 
+            <div
               onClick={() => fileInputRef.current?.click()}
               className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${loadingOCR ? 'border-k5-digitalBlue bg-k5-digitalBlue/5 animate-pulse' : 'border-k5-sand/30 hover:border-k5-digitalBlue hover:bg-k5-digitalBlue/5'}`}
             >
@@ -151,8 +188,20 @@ export const AddToolModal: React.FC<AddToolModalProps> = ({ isOpen, onClose, onA
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-1">
+              <label className="block text-[10px] font-black text-k5-sand uppercase tracking-widest mb-2">Anzahl Lizenzen</label>
+              <input
+                required type="number" min="1"
+                className="w-full p-4 bg-k5-sand/5 border border-k5-sand/20 rounded-2xl focus:ring-2 focus:ring-k5-digitalBlue outline-none font-bold text-k5-deepBlue transition-all"
+                value={formData.quantity}
+                onChange={e => {
+                  const val = e.target.value;
+                  setFormData({ ...formData, quantity: val === '' ? '' as any : parseInt(val) });
+                }}
+              />
+            </div>
+            <div className="md:col-span-2">
               <label className="block text-[10px] font-black text-k5-sand uppercase tracking-widest mb-2">Kategorie</label>
               <div className="relative">
                 <select
@@ -172,29 +221,29 @@ export const AddToolModal: React.FC<AddToolModalProps> = ({ isOpen, onClose, onA
                 </div>
               </div>
             </div>
-            <div>
-              <label className="block text-[10px] font-black text-k5-sand uppercase tracking-widest mb-2">Verantwortliche Person (Owner)</label>
-              <input
-                type="text" placeholder="z.B. Vorname Nachname"
-                className="w-full p-4 bg-k5-sand/5 border border-k5-sand/20 rounded-2xl focus:ring-2 focus:ring-k5-digitalBlue outline-none font-bold text-k5-deepBlue transition-all"
-                value={formData.owner}
-                onChange={e => setFormData({ ...formData, owner: e.target.value })}
-              />
-            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-[10px] font-black text-k5-sand uppercase tracking-widest mb-2">Monatliche Kosten (€)</label>
-              <input
-                required type="number"
-                className="w-full p-4 bg-k5-sand/5 border border-k5-sand/20 rounded-2xl focus:ring-2 focus:ring-k5-digitalBlue outline-none font-black text-k5-deepBlue"
-                value={formData.monthlyCost}
-                onChange={e => {
-                  const val = parseFloat(e.target.value) || 0;
-                  setFormData({...formData, monthlyCost: val, yearlyCost: val * 12});
-                }}
-              />
+              <label className="block text-[10px] font-black text-k5-sand uppercase tracking-widest mb-2">Verantwortliche Person (Owner)</label>
+              <div className="relative">
+                <select
+                  required
+                  className="w-full p-4 bg-k5-sand/5 border border-k5-sand/20 rounded-2xl focus:ring-2 focus:ring-k5-digitalBlue outline-none font-bold text-k5-deepBlue appearance-none"
+                  value={formData.owner}
+                  onChange={e => setFormData({ ...formData, owner: e.target.value })}
+                >
+                  <option value="">Bitte wählen...</option>
+                  {OWNERS.map(owner => (
+                    <option key={owner} value={owner}>{owner}</option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-k5-sand">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
             <div>
               <label className="block text-[10px] font-black text-k5-sand uppercase tracking-widest mb-2">Status</label>
@@ -218,6 +267,88 @@ export const AddToolModal: React.FC<AddToolModalProps> = ({ isOpen, onClose, onA
             </div>
           </div>
 
+          <div className="space-y-4">
+            <div className="flex flex-wrap justify-between items-center gap-4">
+              <label className="block text-[10px] font-black text-k5-sand uppercase tracking-widest">Kosten</label>
+              <div className="flex gap-2">
+                <div className="flex bg-k5-sand/10 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setPriceMode('total')}
+                    className={`px-3 py-1 text-[10px] font-black rounded-lg transition-all ${priceMode === 'total' ? 'bg-white text-k5-deepBlue shadow-sm' : 'text-k5-deepBlue/50 hover:text-k5-deepBlue'}`}
+                  >
+                    Gesamt
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPriceMode('unit')}
+                    className={`px-3 py-1 text-[10px] font-black rounded-lg transition-all ${priceMode === 'unit' ? 'bg-white text-k5-deepBlue shadow-sm' : 'text-k5-deepBlue/50 hover:text-k5-deepBlue'}`}
+                  >
+                    Pro Lizenz
+                  </button>
+                </div>
+                <div className="flex bg-k5-sand/10 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setCurrency('EUR')}
+                    className={`px-3 py-1 text-[10px] font-black rounded-lg transition-all ${currency === 'EUR' ? 'bg-k5-deepBlue text-white shadow-sm' : 'text-k5-deepBlue/50 hover:text-k5-deepBlue'}`}
+                  >
+                    EUR (€)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrency('USD')}
+                    className={`px-3 py-1 text-[10px] font-black rounded-lg transition-all ${currency === 'USD' ? 'bg-k5-deepBlue text-white shadow-sm' : 'text-k5-deepBlue/50 hover:text-k5-deepBlue'}`}
+                  >
+                    USD ($)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[10px] font-black text-k5-sand uppercase tracking-widest mb-2">
+                  Monatlich ({currency === 'EUR' ? '€' : '$'}) {priceMode === 'unit' ? '/ Lizenz' : ''}
+                </label>
+                <input
+                  required type="number" step="0.01"
+                  className="w-full p-4 bg-k5-sand/5 border border-k5-sand/20 rounded-2xl focus:ring-2 focus:ring-k5-digitalBlue outline-none font-black text-k5-deepBlue"
+                  value={formData.monthlyCost || ''}
+                  onChange={e => {
+                    const val = parseFloat(e.target.value) || 0;
+                    setFormData({ ...formData, monthlyCost: val, yearlyCost: parseFloat((val * 12).toFixed(2)) });
+                  }}
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-k5-sand uppercase tracking-widest mb-2">
+                  Jährlich ({currency === 'EUR' ? '€' : '$'}) {priceMode === 'unit' ? '/ Lizenz' : ''}
+                </label>
+                <input
+                  required type="number" step="0.01"
+                  className="w-full p-4 bg-k5-sand/5 border border-k5-sand/20 rounded-2xl focus:ring-2 focus:ring-k5-digitalBlue outline-none font-black text-k5-deepBlue"
+                  value={formData.yearlyCost || ''}
+                  onChange={e => {
+                    const val = parseFloat(e.target.value) || 0;
+                    setFormData({ ...formData, yearlyCost: val, monthlyCost: parseFloat((val / 12).toFixed(2)) });
+                  }}
+                />
+              </div>
+            </div>
+            {priceMode === 'unit' && formData.quantity > 1 && (
+              <p className="text-[10px] text-k5-sand font-bold italic">
+                * Automatisch berechnet: {formData.quantity} Lizenzen x Preis
+              </p>
+            )}
+            {currency === 'USD' && (
+              <p className="text-[10px] text-k5-digitalBlue font-bold italic">
+                * Wird automatisch mit 1 USD = {EXCHANGE_RATE} EUR umgerechnet
+              </p>
+            )}
+          </div>
+
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-[10px] font-black text-k5-sand uppercase tracking-widest mb-2">Nächste Verlängerung</label>
@@ -240,14 +371,14 @@ export const AddToolModal: React.FC<AddToolModalProps> = ({ isOpen, onClose, onA
           </div>
 
           <div>
-             <label className="block text-[10px] font-black text-k5-sand uppercase tracking-widest mb-2">Beschreibung</label>
-             <textarea
-                className="w-full p-4 bg-k5-sand/5 border border-k5-sand/20 rounded-2xl focus:ring-2 focus:ring-k5-digitalBlue outline-none font-medium text-k5-deepBlue"
-                rows={2}
-                value={formData.description}
-                onChange={e => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Kurze Beschreibung des Tools..."
-              />
+            <label className="block text-[10px] font-black text-k5-sand uppercase tracking-widest mb-2">Beschreibung</label>
+            <textarea
+              className="w-full p-4 bg-k5-sand/5 border border-k5-sand/20 rounded-2xl focus:ring-2 focus:ring-k5-digitalBlue outline-none font-medium text-k5-deepBlue"
+              rows={2}
+              value={formData.description}
+              onChange={e => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Kurze Beschreibung des Tools..."
+            />
           </div>
 
           <div className="pt-6">

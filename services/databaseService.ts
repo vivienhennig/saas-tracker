@@ -9,7 +9,7 @@ const isCloudEnabled = !!(CLOUD_URL && CLOUD_KEY);
 
 // Helper: Remove fields that don't exist in Supabase schema
 const sanitizeForDb = (sub: any) => {
-  const { yearlyCost, owner, ...rest } = sub;
+  const { ...rest } = sub;
   return rest;
 };
 

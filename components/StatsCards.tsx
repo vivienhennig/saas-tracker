@@ -8,8 +8,8 @@ interface StatsCardsProps {
 
 export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
   const cards = [
-    { label: 'Monatliche Ausgaben', value: `${stats.totalMonthly.toLocaleString('de-DE')} €`, color: 'text-k5-digitalBlue', glow: 'shadow-k5-digitalBlue/10' },
-    { label: 'Jährliche Verpflichtung', value: `${stats.totalYearly.toLocaleString('de-DE')} €`, color: 'text-k5-deepBlue', glow: 'shadow-k5-deepBlue/10' },
+    { label: 'Monatliche Ausgaben', value: `${(stats.totalMonthly || 0).toLocaleString('de-DE')} €`, color: 'text-k5-digitalBlue', glow: 'shadow-k5-digitalBlue/10' },
+    { label: 'Jährliche Verpflichtung', value: `${(stats.totalYearly || 0).toLocaleString('de-DE')} €`, color: 'text-k5-deepBlue', glow: 'shadow-k5-deepBlue/10' },
     { label: 'Aktiver Stack', value: stats.activeTools, color: 'text-k5-digitalBlue', glow: 'shadow-k5-digitalBlue/10' },
     { label: 'Anstehende Verlängerungen', value: stats.upcomingRenewals, color: 'text-k5-sand', glow: 'shadow-k5-sand/10' },
   ];
