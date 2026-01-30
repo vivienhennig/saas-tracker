@@ -8,6 +8,7 @@ import { AddToolModal } from './components/AddToolModal';
 import { OnboardingTour } from './components/OnboardingTour';
 import { Analytics } from './components/Analytics';
 import { StackAuditModal } from './components/StackAuditModal';
+import { ConfirmationModal } from './components/ConfirmationModal';
 import { auditStack } from './services/geminiService';
 
 type FilterTab = 'Alle' | 'Aktiv' | 'Inaktiv' | 'Demnächst fällig';
@@ -25,6 +26,13 @@ const App: React.FC = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [confirmation, setConfirmation] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+    isDestructive: false
+  });
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme');
     return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -149,15 +157,21 @@ const App: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Tool aus dem Stack entfernen?')) {
-      try {
-        await databaseService.remove(id);
-        setSubscriptions(prev => prev.filter(s => s.id !== id));
-      } catch (err) {
-        alert("Löschen fehlgeschlagen");
+  const handleDelete = (id: string) => {
+    setConfirmation({
+      isOpen: true,
+      title: 'Tool entfernen',
+      message: 'Möchten Sie dieses Tool wirklich aus dem Stack entfernen? Diese Aktion kann nicht rückgängig gemacht werden.',
+      isDestructive: true,
+      onConfirm: async () => {
+        try {
+          await databaseService.remove(id);
+          setSubscriptions(prev => prev.filter(s => s.id !== id));
+        } catch (err) {
+          alert("Löschen fehlgeschlagen");
+        }
       }
-    }
+    });
   };
 
   const handleEdit = (sub: Subscription) => {
@@ -169,16 +183,22 @@ const App: React.FC = () => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
-  const handleBulkDelete = async () => {
-    if (confirm(`${selectedIds.length} Tools wirklich löschen?`)) {
-      try {
-        await Promise.all(selectedIds.map(id => databaseService.remove(id)));
-        setSubscriptions(prev => prev.filter(s => !selectedIds.includes(s.id)));
-        setSelectedIds([]);
-      } catch (err) {
-        alert("Fehler beim Bulk-Löschen");
+  const handleBulkDelete = () => {
+    setConfirmation({
+      isOpen: true,
+      title: 'Tools entfernen',
+      message: `${selectedIds.length} Tools wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
+      isDestructive: true,
+      onConfirm: async () => {
+        try {
+          await Promise.all(selectedIds.map(id => databaseService.remove(id)));
+          setSubscriptions(prev => prev.filter(s => !selectedIds.includes(s.id)));
+          setSelectedIds([]);
+        } catch (err) {
+          alert("Fehler beim Bulk-Löschen");
+        }
       }
-    }
+    });
   };
 
   const handleBulkUpdate = async (updates: Partial<Subscription>) => {
@@ -440,6 +460,14 @@ const App: React.FC = () => {
         onClose={() => setIsAuditModalOpen(false)}
         result={auditResult}
         loading={loadingAudit}
+      />
+      <ConfirmationModal
+        isOpen={confirmation.isOpen}
+        onClose={() => setConfirmation(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmation.onConfirm}
+        title={confirmation.title}
+        message={confirmation.message}
+        isDestructive={confirmation.isDestructive}
       />
     </div>
   );
