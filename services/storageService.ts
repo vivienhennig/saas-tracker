@@ -16,7 +16,8 @@ const DEFAULT_DATA: Subscription[] = [
     addedBy: 'Admin',
     // Added missing owner property
     owner: 'IT Operations',
-    url: 'https://slack.com'
+    url: 'https://slack.com',
+    billingCycle: 'monthly'
   },
   {
     id: '2',
@@ -30,7 +31,8 @@ const DEFAULT_DATA: Subscription[] = [
     addedBy: 'Engineering',
     // Added missing owner property
     owner: 'CTO Office',
-    url: 'https://github.com'
+    url: 'https://github.com',
+    billingCycle: 'monthly'
   },
   {
     id: '3',
@@ -44,7 +46,8 @@ const DEFAULT_DATA: Subscription[] = [
     addedBy: 'Operations',
     // Added missing owner property
     owner: 'Facility Management',
-    url: 'https://zoom.us'
+    url: 'https://zoom.us',
+    billingCycle: 'monthly'
   },
   {
     id: '4',
@@ -58,7 +61,8 @@ const DEFAULT_DATA: Subscription[] = [
     addedBy: 'Design Team',
     // Added missing owner property
     owner: 'Lead Designer',
-    url: 'https://figma.com'
+    url: 'https://figma.com',
+    billingCycle: 'monthly'
   }
 ];
 
