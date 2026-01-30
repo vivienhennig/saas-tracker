@@ -51,7 +51,10 @@ export interface Subscription {
   addedBy: string;
   owner: string; // Neue Eigenschaft
   url: string;
-  quantity?: number; // Neue Eigenschaft für mehrere Lizenzen
+  quantity?: number;
+  monthsPerYear?: number;
+  usageMonths?: number[];
+  billingCycle: 'monthly' | 'yearly';
 }
 
 export interface Stats {
