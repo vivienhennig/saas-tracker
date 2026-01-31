@@ -1,4 +1,3 @@
-
 import { Subscription, SubscriptionStatus } from '../types';
 
 const STORAGE_KEY = 'saasstack_subscriptions';
@@ -17,7 +16,7 @@ const DEFAULT_DATA: Subscription[] = [
     // Added missing owner property
     owner: 'IT Operations',
     url: 'https://slack.com',
-    billingCycle: 'monthly'
+    billingCycle: 'monthly',
   },
   {
     id: '2',
@@ -32,7 +31,7 @@ const DEFAULT_DATA: Subscription[] = [
     // Added missing owner property
     owner: 'CTO Office',
     url: 'https://github.com',
-    billingCycle: 'monthly'
+    billingCycle: 'monthly',
   },
   {
     id: '3',
@@ -47,7 +46,7 @@ const DEFAULT_DATA: Subscription[] = [
     // Added missing owner property
     owner: 'Facility Management',
     url: 'https://zoom.us',
-    billingCycle: 'monthly'
+    billingCycle: 'monthly',
   },
   {
     id: '4',
@@ -62,8 +61,8 @@ const DEFAULT_DATA: Subscription[] = [
     // Added missing owner property
     owner: 'Lead Designer',
     url: 'https://figma.com',
-    billingCycle: 'monthly'
-  }
+    billingCycle: 'monthly',
+  },
 ];
 
 export const getSubscriptions = (): Subscription[] => {
@@ -88,5 +87,5 @@ export const addSubscription = (sub: Omit<Subscription, 'id'>): Subscription => 
 
 export const deleteSubscription = (id: string): void => {
   const subs = getSubscriptions();
-  saveSubscriptions(subs.filter(s => s.id !== id));
+  saveSubscriptions(subs.filter((s) => s.id !== id));
 };

@@ -1,52 +1,76 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { Subscription, SubscriptionStatus, Stats, TOOL_CATEGORIES, OWNERS } from './types';
-import { databaseService } from './services/databaseService';
 import { StatsCards } from './components/StatsCards';
 import { SubscriptionTable } from './components/SubscriptionTable';
-import { AddToolModal } from './components/AddToolModal';
 import { OnboardingTour } from './components/OnboardingTour';
-import { Analytics } from './components/Analytics';
-import { StackAuditModal } from './components/StackAuditModal';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { auditStack } from './services/geminiService';
+import { Toaster, toast } from 'sonner';
+import { exportToCSV } from './utils/exportCSV';
+import { useDarkMode } from './hooks/useDarkMode';
+import { useFilters } from './hooks/useFilters';
+import { useSubscriptions } from './hooks/useSubscriptions';
+
+// Lazy loaded components
+const AddToolModal = lazy(() =>
+  import('./components/AddToolModal').then((module) => ({ default: module.AddToolModal })),
+);
+const Analytics = lazy(() =>
+  import('./components/Analytics').then((module) => ({ default: module.Analytics })),
+);
+const StackAuditModal = lazy(() =>
+  import('./components/StackAuditModal').then((module) => ({ default: module.StackAuditModal })),
+);
 
 type FilterTab = 'Alle' | 'Aktiv' | 'Inaktiv' | 'Demnächst fällig';
 
 const App: React.FC = () => {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  // Custom Hooks
+  const [darkMode, setDarkMode] = useDarkMode();
+  const {
+    subscriptions,
+    loading,
+    loadData,
+    handleAdd,
+    handleUpdate: updateSubscription,
+    handleDelete: deleteSubscription,
+    handleBulkDelete: bulkDeleteSubscriptions,
+    handleBulkUpdate: bulkUpdateSubscriptions,
+  } = useSubscriptions();
+
+  // State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTool, setEditingTool] = useState<Subscription | null>(null);
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [auditResult, setAuditResult] = useState<string | null>(null);
   const [loadingAudit, setLoadingAudit] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<FilterTab>('Alle');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [confirmation, setConfirmation] = useState({
     isOpen: false,
     title: '',
     message: '',
-    onConfirm: () => { },
-    isDestructive: false
-  });
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    onConfirm: () => {},
+    isDestructive: false,
   });
 
+  // Filters with custom hook
+  const {
+    searchTerm,
+    setSearchTerm,
+    activeTab,
+    setActiveTab,
+    selectedCategories,
+    setSelectedCategories,
+    selectedOwners,
+    setSelectedOwners,
+    filteredSubs,
+  } = useFilters(subscriptions);
+
+  // Load data on mount
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [darkMode]);
+    loadData();
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -58,22 +82,6 @@ const App: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const data = await databaseService.fetchAll();
-      setSubscriptions(data);
-    } catch (error) {
-      console.error("Fehler beim Laden:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
   }, []);
 
   const stats = useMemo<Stats>(() => {
@@ -94,7 +102,10 @@ const App: React.FC = () => {
   }, [subscriptions]);
 
   const handleRunAudit = async () => {
-    if (subscriptions.length === 0) return alert("Fügen Sie zuerst Tools hinzu, um eine Analyse zu starten.");
+    if (subscriptions.length === 0) {
+      toast.warning('Fügen Sie zuerst Tools hinzu, um eine Analyse zu starten.');
+      return;
+    }
     setIsAuditModalOpen(true);
     setLoadingAudit(true);
     const result = await auditStack(subscriptions);
@@ -102,116 +113,51 @@ const App: React.FC = () => {
     setLoadingAudit(false);
   };
 
-  const filteredSubs = useMemo(() => {
-    const now = new Date();
-    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-    return subscriptions.filter(s => {
-      const toolName = (s.name || '').toLowerCase();
-      const toolCategory = (s.category || '').toLowerCase();
-      const toolOwner = (s.owner || '').toLowerCase();
-      const search = searchTerm.toLowerCase();
-
-      const matchesSearch = toolName.includes(search) ||
-        toolCategory.includes(search) ||
-        toolOwner.includes(search);
-
-      let matchesTab = true;
-      if (activeTab === 'Aktiv') matchesTab = s.status === SubscriptionStatus.ACTIVE || s.status === SubscriptionStatus.TRIAL;
-      if (activeTab === 'Inaktiv') matchesTab = s.status === SubscriptionStatus.INACTIVE;
-      if (activeTab === 'Demnächst fällig') {
-        const renewal = new Date(s.renewalDate);
-        matchesTab = renewal >= now && renewal <= sevenDaysFromNow;
-      }
-
-      const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(s.category);
-
-      let matchesOwner = selectedOwners.length === 0;
-      if (!matchesOwner) {
-        matchesOwner = selectedOwners.some(owner => {
-          if (owner === 'Vivien Hennig') return s.owner === 'Vivien Hennig' || s.owner === 'Vivi';
-          return s.owner === owner;
-        });
-      }
-
-      return matchesSearch && matchesTab && matchesCategory && matchesOwner;
-    });
-  }, [subscriptions, searchTerm, activeTab, selectedCategories, selectedOwners]);
-
-  const handleAdd = async (newSub: Omit<Subscription, 'id'>) => {
-    try {
-      const added = await databaseService.add(newSub);
-      setSubscriptions(prev => [added, ...prev]);
-    } catch (err) {
-      alert("Fehler beim Speichern");
-    }
-  };
-
+  // Wrapper functions to integrate with local state
   const handleUpdate = async (id: string, updates: Partial<Subscription>) => {
-    try {
-      const updated = await databaseService.update(id, updates);
-      setSubscriptions(prev => prev.map(s => s.id === id ? updated : s));
-      setEditingTool(null);
-    } catch (err) {
-      alert("Fehler beim Update");
-    }
+    await updateSubscription(id, updates);
+    setEditingTool(null);
   };
 
   const handleDelete = (id: string) => {
     setConfirmation({
       isOpen: true,
-      title: 'Tool entfernen',
-      message: 'Möchten Sie dieses Tool wirklich aus dem Stack entfernen? Diese Aktion kann nicht rückgängig gemacht werden.',
-      isDestructive: true,
+      title: 'Tool löschen?',
+      message: 'Möchten Sie dieses Tool wirklich entfernen?',
       onConfirm: async () => {
-        try {
-          await databaseService.remove(id);
-          setSubscriptions(prev => prev.filter(s => s.id !== id));
-        } catch (err) {
-          alert("Löschen fehlgeschlagen");
-        }
-      }
+        await deleteSubscription(id);
+      },
+      isDestructive: true,
     });
   };
 
-  const handleEdit = (sub: Subscription) => {
-    setEditingTool(sub);
+  const handleEdit = (subscription: Subscription) => {
+    setEditingTool(subscription);
     setIsModalOpen(true);
   };
 
   const handleToggleSelection = (id: string) => {
-    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
   };
 
   const handleBulkDelete = () => {
     setConfirmation({
       isOpen: true,
-      title: 'Tools entfernen',
-      message: `${selectedIds.length} Tools wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
-      isDestructive: true,
+      title: `${selectedIds.length} Tools löschen?`,
+      message: 'Möchten Sie die ausgewählten Tools wirklich entfernen?',
       onConfirm: async () => {
-        try {
-          await Promise.all(selectedIds.map(id => databaseService.remove(id)));
-          setSubscriptions(prev => prev.filter(s => !selectedIds.includes(s.id)));
-          setSelectedIds([]);
-        } catch (err) {
-          alert("Fehler beim Bulk-Löschen");
-        }
-      }
+        await bulkDeleteSubscriptions(selectedIds);
+        setSelectedIds([]);
+      },
+      isDestructive: true,
     });
   };
 
   const handleBulkUpdate = async (updates: Partial<Subscription>) => {
-    try {
-      const updatedTools = await Promise.all(selectedIds.map(id => databaseService.update(id, updates)));
-      setSubscriptions(prev => prev.map(s => {
-        const updated = updatedTools.find(u => u.id === s.id);
-        return updated ? updated : s;
-      }));
-      setSelectedIds([]);
-    } catch (err) {
-      alert("Fehler beim Bulk-Update");
-    }
+    await bulkUpdateSubscriptions(selectedIds, updates);
+    setSelectedIds([]);
   };
 
   const handleCloseModal = () => {
@@ -223,6 +169,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen">
+      <Toaster richColors position="top-right" theme={darkMode ? 'dark' : 'light'} />
       <OnboardingTour />
       <header id="header" className="bg-k5-deepBlue border-b border-k5-digitalBlue/20 sticky top-0 z-40 shadow-xl shadow-k5-deepBlue/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
@@ -260,6 +207,16 @@ const App: React.FC = () => {
             </button>
 
             <button
+              onClick={() => {
+                exportToCSV(subscriptions);
+                toast.success('CSV Export erfolgreich');
+              }}
+              className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all hover:bg-white/20"
+            >
+              <span>📊 Export CSV</span>
+            </button>
+
+            <button
               id="add-button"
               onClick={() => setIsModalOpen(true)}
               className="px-6 py-2.5 bg-k5-lime text-k5-deepBlue rounded-xl font-black uppercase text-xs tracking-widest hover:brightness-110 transition-all flex items-center gap-2 shadow-xl shadow-k5-lime/20 k5-glow-blue"
@@ -283,7 +240,9 @@ const App: React.FC = () => {
 
         <StatsCards stats={stats} />
 
-        <Analytics subscriptions={subscriptions} darkMode={darkMode} />
+        <Suspense fallback={<div className="mb-12 h-96 animate-pulse rounded-2xl bg-k5-sand/5 dark:bg-white/5" />}>
+          <Analytics subscriptions={subscriptions} darkMode={darkMode} />
+        </Suspense>
 
         <div className="mb-8 space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-6">
@@ -448,19 +407,23 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <AddToolModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onAdd={handleAdd}
-        onUpdate={handleUpdate}
-        initialData={editingTool}
-      />
-      <StackAuditModal
-        isOpen={isAuditModalOpen}
-        onClose={() => setIsAuditModalOpen(false)}
-        result={auditResult}
-        loading={loadingAudit}
-      />
+      <Suspense fallback={null}>
+        <AddToolModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onAdd={handleAdd}
+          onUpdate={handleUpdate}
+          initialData={editingTool}
+        />
+      </Suspense>
+      <Suspense fallback={null}>
+        <StackAuditModal
+          isOpen={isAuditModalOpen}
+          onClose={() => setIsAuditModalOpen(false)}
+          result={auditResult}
+          loading={loadingAudit}
+        />
+      </Suspense>
       <ConfirmationModal
         isOpen={confirmation.isOpen}
         onClose={() => setConfirmation(prev => ({ ...prev, isOpen: false }))}

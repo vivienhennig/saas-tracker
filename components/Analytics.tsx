@@ -1,6 +1,19 @@
-
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, AreaChart, Area, CartesianGrid } from 'recharts';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  AreaChart,
+  Area,
+  CartesianGrid,
+} from 'recharts';
 import { Subscription } from '../types';
 
 interface AnalyticsProps {
@@ -10,7 +23,7 @@ interface AnalyticsProps {
 
 export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode }) => {
   const categoryDataMap: Record<string, number> = {};
-  subscriptions.forEach(sub => {
+  subscriptions.forEach((sub) => {
     categoryDataMap[sub.category] = (categoryDataMap[sub.category] || 0) + sub.monthlyCost;
   });
 
@@ -20,7 +33,20 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
     : ['#052364', '#092AFF', '#E9FF86', '#C5B8AE', '#00a5e5', '#F3FCCF'];
 
   // Trend Chart Logic
-  const months = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mär',
+    'Apr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Dez',
+  ];
   const currentMonthIdx = new Date().getMonth();
 
   const trendData = Array.from({ length: 12 }, (_, i) => {
@@ -53,9 +79,11 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
   });
 
   return (
-    <div id="analytics" className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-      <div className="bg-gradient-to-br from-white to-k5-sand/5 dark:from-black/40 dark:to-black/40 p-8 rounded-2xl border border-k5-deepBlue/5 dark:border-white/5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-k5-digitalBlue/20 dark:hover:shadow-[0_0_20px_rgba(92,74,255,0.1)]">
-        <h3 className="text-[10px] font-black text-k5-sand dark:text-k5-sand/60 uppercase tracking-[0.2em] mb-6">Verteilung nach Kategorien</h3>
+    <div id="analytics" className="mb-12 grid grid-cols-1 gap-8 lg:grid-cols-2">
+      <div className="rounded-2xl border border-k5-deepBlue/5 bg-gradient-to-br from-white to-k5-sand/5 p-8 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-k5-digitalBlue/20 hover:shadow-xl dark:border-white/5 dark:from-black/40 dark:to-black/40 dark:hover:shadow-[0_0_20px_rgba(92,74,255,0.1)]">
+        <h3 className="mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-k5-sand dark:text-k5-sand/60">
+          Verteilung nach Kategorien
+        </h3>
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -68,10 +96,17 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
                 paddingAngle={8}
                 dataKey="value"
                 stroke="none"
-                style={{ filter: darkMode ? 'drop-shadow(0 0 10px rgba(92, 74, 255, 0.4))' : 'none' }}
+                style={{
+                  filter: darkMode ? 'drop-shadow(0 0 10px rgba(92, 74, 255, 0.4))' : 'none',
+                }}
               >
-                {categoryData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke={darkMode ? 'rgba(0,0,0,0.5)' : 'none'} strokeWidth={2} />
+                {categoryData.map((_entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                    stroke={darkMode ? 'rgba(0,0,0,0.5)' : 'none'}
+                    strokeWidth={2}
+                  />
                 ))}
               </Pie>
               <Tooltip
@@ -79,9 +114,11 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
                   borderRadius: '12px',
                   border: darkMode ? '1px solid rgba(255,255,255,0.1)' : 'none',
                   backgroundColor: darkMode ? '#0a0a0a' : 'white',
-                  boxShadow: darkMode ? '0 0 20px rgba(92, 74, 255, 0.2)' : '0 10px 30px rgba(0,0,0,0.4)',
+                  boxShadow: darkMode
+                    ? '0 0 20px rgba(92, 74, 255, 0.2)'
+                    : '0 10px 30px rgba(0,0,0,0.4)',
                   fontWeight: 'bold',
-                  color: darkMode ? '#fff' : '#052364'
+                  color: darkMode ? '#fff' : '#052364',
                 }}
                 itemStyle={{ color: darkMode ? '#fff' : '#052364' }}
                 labelStyle={{ color: darkMode ? '#888' : '#052364' }}
@@ -91,40 +128,59 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
                 verticalAlign="bottom"
                 height={36}
                 iconType="circle"
-                formatter={(value) => <span className="text-k5-deepBlue dark:text-white/80 font-bold ml-1 text-xs">{value}</span>}
+                formatter={(value) => (
+                  <span className="ml-1 text-xs font-bold text-k5-deepBlue dark:text-white/80">
+                    {value}
+                  </span>
+                )}
               />
             </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-white to-k5-sand/5 dark:from-black/40 dark:to-black/40 p-8 rounded-2xl border border-k5-deepBlue/5 dark:border-white/5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-k5-digitalBlue/20 dark:hover:shadow-[0_0_20px_rgba(204,255,0,0.1)]">
-        <h3 className="text-[10px] font-black text-k5-sand dark:text-k5-sand/60 uppercase tracking-[0.2em] mb-6">Einfluss der Top-Investitionen</h3>
+      <div className="rounded-2xl border border-k5-deepBlue/5 bg-gradient-to-br from-white to-k5-sand/5 p-8 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-k5-digitalBlue/20 hover:shadow-xl dark:border-white/5 dark:from-black/40 dark:to-black/40 dark:hover:shadow-[0_0_20px_rgba(204,255,0,0.1)]">
+        <h3 className="mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-k5-sand dark:text-k5-sand/60">
+          Einfluss der Top-Investitionen
+        </h3>
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={[...subscriptions]
                 .sort((a, b) => b.monthlyCost - a.monthlyCost)
                 .slice(0, 5)
-                .map(sub => {
-                  const catIndex = categoryData.findIndex(c => c.name === sub.category);
-                  const color = catIndex >= 0 ? COLORS[catIndex % COLORS.length] : (darkMode ? '#ccff00' : '#092AFF');
+                .map((sub) => {
+                  const catIndex = categoryData.findIndex((c) => c.name === sub.category);
+                  const color =
+                    catIndex >= 0
+                      ? COLORS[catIndex % COLORS.length]
+                      : darkMode
+                        ? '#ccff00'
+                        : '#092AFF';
                   return { ...sub, fill: color };
-                })
-              }
+                })}
               layout="vertical"
               margin={{ left: 10, right: 30, top: 0, bottom: 0 }}
             >
               <XAxis type="number" hide />
-              <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 11, fontWeight: 900, fill: darkMode ? '#fff' : '#052364' }} axisLine={false} tickLine={false} />
+              <YAxis
+                dataKey="name"
+                type="category"
+                width={100}
+                tick={{ fontSize: 11, fontWeight: 900, fill: darkMode ? '#fff' : '#052364' }}
+                axisLine={false}
+                tickLine={false}
+              />
               <Tooltip
                 cursor={{ fill: darkMode ? 'rgba(255,255,255,0.05)' : 'transparent' }}
                 contentStyle={{
                   borderRadius: '12px',
                   border: darkMode ? '1px solid rgba(255,255,255,0.1)' : 'none',
                   backgroundColor: darkMode ? '#0a0a0a' : 'white',
-                  boxShadow: darkMode ? '0 0 20px rgba(204, 255, 0, 0.2)' : '0 10px 30px rgba(0,0,0,0.4)',
-                  fontWeight: 'bold'
+                  boxShadow: darkMode
+                    ? '0 0 20px rgba(204, 255, 0, 0.2)'
+                    : '0 10px 30px rgba(0,0,0,0.4)',
+                  fontWeight: 'bold',
                 }}
                 itemStyle={{ color: darkMode ? '#ccff00' : '#052364' }}
                 formatter={(value) => `${value} €`}
@@ -133,19 +189,26 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
                 dataKey="monthlyCost"
                 radius={[0, 8, 8, 0]}
                 barSize={32}
-                style={{ filter: darkMode ? 'drop-shadow(0 0 8px rgba(204, 255, 0, 0.5))' : 'none' }}
+                style={{
+                  filter: darkMode ? 'drop-shadow(0 0 8px rgba(204, 255, 0, 0.5))' : 'none',
+                }}
               >
                 {
-                  // We need to re-map the data here to render individual cells, 
+                  // We need to re-map the data here to render individual cells,
                   // but Recharts Bar can take data directly if we map it in the data prop and utilize Cell.
-                  // Actually, simpler: map the data in the BarChart data prop (done above) 
+                  // Actually, simpler: map the data in the BarChart data prop (done above)
                   // and then use Cell mapped from that data.
                   [...subscriptions]
                     .sort((a, b) => b.monthlyCost - a.monthlyCost)
                     .slice(0, 5)
                     .map((sub, index) => {
-                      const catIndex = categoryData.findIndex(c => c.name === sub.category);
-                      const color = catIndex >= 0 ? COLORS[catIndex % COLORS.length] : (darkMode ? '#ccff00' : '#092AFF');
+                      const catIndex = categoryData.findIndex((c) => c.name === sub.category);
+                      const color =
+                        catIndex >= 0
+                          ? COLORS[catIndex % COLORS.length]
+                          : darkMode
+                            ? '#ccff00'
+                            : '#092AFF';
                       /* Use softer shadow for individual bars matching their color in dark mode? 
                          Currently style prop on Bar applies to all. We can't easily change filter per Cell in Recharts without custom shape.
                          Will stick to universal filter but correct fill color. */
@@ -158,15 +221,21 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-white to-k5-sand/5 dark:from-black/40 dark:to-black/40 p-8 rounded-2xl border border-k5-deepBlue/5 dark:border-white/5 shadow-sm col-span-1 lg:col-span-2 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-k5-digitalBlue/20 dark:hover:shadow-[0_0_30px_rgba(0,229,255,0.1)]">
-        <h3 className="text-[10px] font-black text-k5-sand dark:text-k5-sand/60 uppercase tracking-[0.2em] mb-6">Kostentrend (Nächste 12 Monate)</h3>
+      <div className="col-span-1 rounded-2xl border border-k5-deepBlue/5 bg-gradient-to-br from-white to-k5-sand/5 p-8 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-k5-digitalBlue/20 hover:shadow-xl dark:border-white/5 dark:from-black/40 dark:to-black/40 dark:hover:shadow-[0_0_30px_rgba(0,229,255,0.1)] lg:col-span-2">
+        <h3 className="mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-k5-sand dark:text-k5-sand/60">
+          Kostentrend (Nächste 12 Monate)
+        </h3>
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={trendData}>
               <defs>
                 <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={darkMode ? "#00e5ff" : "#092AFF"} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={darkMode ? "#00e5ff" : "#092AFF"} stopOpacity={0} />
+                  <stop
+                    offset="5%"
+                    stopColor={darkMode ? '#00e5ff' : '#092AFF'}
+                    stopOpacity={0.3}
+                  />
+                  <stop offset="95%" stopColor={darkMode ? '#00e5ff' : '#092AFF'} stopOpacity={0} />
                 </linearGradient>
                 {darkMode && (
                   <filter id="neonGlow" height="200%" width="200%">
@@ -178,7 +247,11 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
                   </filter>
                 )}
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? "rgba(255,255,255,0.05)" : "rgba(5,35,100,0.05)"} />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke={darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(5,35,100,0.05)'}
+              />
               <XAxis
                 dataKey="name"
                 axisLine={false}
@@ -196,8 +269,10 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
                   borderRadius: '12px',
                   border: darkMode ? '1px solid rgba(255,255,255,0.1)' : 'none',
                   backgroundColor: darkMode ? '#0a0a0a' : 'white',
-                  boxShadow: darkMode ? '0 0 20px rgba(0, 229, 255, 0.2)' : '0 10px 30px rgba(0,0,0,0.4)',
-                  fontWeight: 'bold'
+                  boxShadow: darkMode
+                    ? '0 0 20px rgba(0, 229, 255, 0.2)'
+                    : '0 10px 30px rgba(0,0,0,0.4)',
+                  fontWeight: 'bold',
                 }}
                 itemStyle={{ color: darkMode ? '#00e5ff' : '#052364' }}
                 formatter={(value) => [`${value} €`, 'Gesamtkosten']}
@@ -205,7 +280,7 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke={darkMode ? "#00e5ff" : "#092AFF"}
+                stroke={darkMode ? '#00e5ff' : '#092AFF'}
                 strokeWidth={4}
                 fillOpacity={1}
                 fill="url(#colorValue)"

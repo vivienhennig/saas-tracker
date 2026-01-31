@@ -1,10 +1,9 @@
-
 export enum SubscriptionStatus {
   ACTIVE = 'Aktiv',
   TRIAL = 'Testphase',
   PAUSED = 'Pausiert',
   EXPIRED = 'Abgelaufen',
-  INACTIVE = 'Inaktiv'
+  INACTIVE = 'Inaktiv',
 }
 
 export const TOOL_CATEGORIES = [
@@ -22,7 +21,7 @@ export const TOOL_CATEGORIES = [
   'Webseite',
 ] as const;
 
-export type ToolCategory = typeof TOOL_CATEGORIES[number];
+export type ToolCategory = (typeof TOOL_CATEGORIES)[number];
 
 export const OWNERS = [
   'Bella Wondra',
@@ -33,10 +32,10 @@ export const OWNERS = [
   'Verena Lindner',
   'Verena Schlüpmann',
   'Seline Neuber',
-  'Vivien Hennig'
+  'Vivien Hennig',
 ] as const;
 
-export type OwnerName = typeof OWNERS[number];
+export type OwnerName = (typeof OWNERS)[number];
 
 export interface Subscription {
   id: string;
