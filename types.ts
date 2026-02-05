@@ -54,7 +54,23 @@ export interface Subscription {
   monthsPerYear?: number;
   usageMonths?: number[];
   billingCycle: 'monthly' | 'yearly';
+  notes?: string; // Freitext-Notizen
+  tags?: string[]; // Array von Tags
 }
+
+// Predefined Tags
+export const PREDEFINED_TAGS = [
+  'kritisch',
+  'kündigen',
+  'evaluieren',
+  'wichtig',
+  'optional',
+  'veraltet',
+  'team',
+  'personal',
+] as const;
+
+export type PredefinedTag = (typeof PREDEFINED_TAGS)[number];
 
 export interface Stats {
   totalMonthly: number;
@@ -63,8 +79,56 @@ export interface Stats {
   upcomingRenewals: number;
 }
 
+export interface CostHistoryEntry {
+  id: string;
+  subscription_id: string;
+  recorded_at: string;
+  monthly_cost: number;
+  yearly_cost: number;
+  status: SubscriptionStatus;
+}
+
+// Sort Configuration
+export type SortField = 'name' | 'monthlyCost' | 'yearlyCost' | 'renewalDate' | 'status' | 'owner';
+export type SortDirection = 'asc' | 'desc';
+
+export interface SortConfig {
+  field: SortField;
+  direction: SortDirection;
+}
+
 export interface DbConfig {
   url: string;
   apiKey: string;
   isConnected: boolean;
+}
+
+// --- Contact Types ---
+
+export type ContractCategory = string;
+
+export type ContractStatus = 'draft' | 'active' | 'terminated' | 'completed';
+export type ContractBillingCycle = 'one_time' | 'monthly' | 'quarterly' | 'yearly';
+
+export interface Contract {
+  id: string;
+  provider: string; // Dienstleister / Vermieter
+  description?: string;
+  amount: number;
+  currency: string;
+  billing_cycle: ContractBillingCycle;
+  start_date?: string;
+  end_date?: string;
+  status: ContractStatus;
+  category: string;
+  assigned_event?: string;
+  tags?: string[];
+  created_at?: string;
+}
+
+export interface Event {
+  id: string;
+  name: string;
+  date?: string;
+  description?: string;
 }

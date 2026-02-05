@@ -8,6 +8,7 @@ export const useFilters = (subscriptions: Subscription[]) => {
   const [activeTab, setActiveTab] = useState<FilterTab>('Alle');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const filteredSubs = useMemo(() => {
     const now = new Date();
@@ -24,7 +25,8 @@ export const useFilters = (subscriptions: Subscription[]) => {
 
       let matchesTab = true;
       if (activeTab === 'Aktiv')
-        matchesTab = s.status === SubscriptionStatus.ACTIVE || s.status === SubscriptionStatus.TRIAL;
+        matchesTab =
+          s.status === SubscriptionStatus.ACTIVE || s.status === SubscriptionStatus.TRIAL;
       if (activeTab === 'Inaktiv') matchesTab = s.status === SubscriptionStatus.INACTIVE;
       if (activeTab === 'Demnächst fällig') {
         const renewal = new Date(s.renewalDate);
@@ -42,9 +44,12 @@ export const useFilters = (subscriptions: Subscription[]) => {
         });
       }
 
-      return matchesSearch && matchesTab && matchesCategory && matchesOwner;
+      const matchesTags =
+        selectedTags.length === 0 || (s.tags && s.tags.some((tag) => selectedTags.includes(tag)));
+
+      return matchesSearch && matchesTab && matchesCategory && matchesOwner && matchesTags;
     });
-  }, [subscriptions, searchTerm, activeTab, selectedCategories, selectedOwners]);
+  }, [subscriptions, searchTerm, activeTab, selectedCategories, selectedOwners, selectedTags]);
 
   return {
     searchTerm,
@@ -55,6 +60,8 @@ export const useFilters = (subscriptions: Subscription[]) => {
     setSelectedCategories,
     selectedOwners,
     setSelectedOwners,
+    selectedTags,
+    setSelectedTags,
     filteredSubs,
   };
 };

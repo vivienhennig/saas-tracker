@@ -42,7 +42,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <p className="mb-2 text-xs font-black uppercase tracking-wider text-red-600 dark:text-red-400">
                 Fehlerdetails:
               </p>
-              <p className="text-sm font-mono text-red-800 dark:text-red-300">
+              <p className="font-mono text-sm text-red-800 dark:text-red-300">
                 {this.state.error?.message || 'Unbekannter Fehler'}
               </p>
             </div>

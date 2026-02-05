@@ -51,6 +51,8 @@ export const AddToolModal: React.FC<AddToolModalProps> = ({
     monthsPerYear: 12 as number | string,
     billingCycle: 'monthly' as 'monthly' | 'yearly',
     usageMonths: [] as number[],
+    notes: '',
+    tags: [] as string[],
   });
 
   useEffect(() => {
@@ -71,6 +73,8 @@ export const AddToolModal: React.FC<AddToolModalProps> = ({
         monthsPerYear: initialData.monthsPerYear || 12,
         billingCycle: initialData.billingCycle || 'monthly',
         usageMonths: initialData.usageMonths || [],
+        notes: initialData.notes || '',
+        tags: initialData.tags || [],
       });
       setCurrency('EUR');
       setPriceMode('total');
@@ -99,6 +103,8 @@ export const AddToolModal: React.FC<AddToolModalProps> = ({
         monthsPerYear: 12,
         billingCycle: 'monthly',
         usageMonths: [],
+        notes: '',
+        tags: [],
       });
       setCostInput(0);
       setIsGross(false);
@@ -627,6 +633,59 @@ export const AddToolModal: React.FC<AddToolModalProps> = ({
                 value={formData.cancellationDate}
                 onChange={(e) => setFormData({ ...formData, cancellationDate: e.target.value })}
               />
+            </div>
+          </div>
+
+          {/* Notes Section */}
+          <div>
+            <label className="mb-2 block text-[10px] font-black uppercase tracking-widest text-k5-sand dark:text-k5-sand/60">
+              Notizen (Optional)
+            </label>
+            <textarea
+              className="w-full rounded-2xl border border-k5-sand/20 bg-k5-sand/5 p-4 font-medium text-k5-deepBlue outline-none dark:border-white/10 dark:bg-white/5 dark:text-white"
+              rows={3}
+              placeholder="Notizen zum Tool..."
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            />
+          </div>
+
+          {/* Tags Section */}
+          <div>
+            <label className="mb-2 block text-[10px] font-black uppercase tracking-widest text-k5-sand dark:text-k5-sand/60">
+              Tags (Optional)
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {[
+                'kritisch',
+                'kündigen',
+                'evaluieren',
+                'wichtig',
+                'optional',
+                'veraltet',
+                'team',
+                'personal',
+              ].map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      tags: prev.tags.includes(tag)
+                        ? prev.tags.filter((t) => t !== tag)
+                        : [...prev.tags, tag],
+                    }));
+                  }}
+                  className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide transition-all ${
+                    formData.tags.includes(tag)
+                      ? 'bg-k5-digitalBlue text-white dark:bg-k5-lime dark:text-k5-deepBlue'
+                      : 'bg-k5-sand/10 text-k5-sand hover:bg-k5-sand/20 dark:bg-white/5 dark:text-k5-sand/60 dark:hover:bg-white/10'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
             </div>
           </div>
 

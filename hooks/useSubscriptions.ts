@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Subscription } from '../types';
 import { databaseService } from '../services/databaseService';
+import { costHistoryService } from '../services/costHistoryService';
 import { toast } from 'sonner';
 
 export const useSubscriptions = () => {
@@ -21,11 +22,27 @@ export const useSubscriptions = () => {
   };
 
   const handleAdd = async (newSub: Omit<Subscription, 'id'>) => {
+    // Optimistic update: create temporary ID and add to UI immediately
+    const tempId = `temp-${Date.now()}`;
+    const optimisticSub: Subscription = {
+      ...newSub,
+      id: tempId,
+    };
+
+    setSubscriptions((prev) => [optimisticSub, ...prev]);
+
     try {
       const added = await databaseService.add(newSub);
-      setSubscriptions((prev) => [added, ...prev]);
+
+      // Create initial history snapshot
+      costHistoryService.recordSnapshot(added).catch(console.error);
+
+      // Replace temporary with real data
+      setSubscriptions((prev) => prev.map((s) => (s.id === tempId ? added : s)));
       toast.success('Tool erfolgreich hinzugefügt');
     } catch (err) {
+      // Rollback on error
+      setSubscriptions((prev) => prev.filter((s) => s.id !== tempId));
       toast.error('Fehler beim Speichern');
     }
   };
@@ -33,6 +50,17 @@ export const useSubscriptions = () => {
   const handleUpdate = async (id: string, updates: Partial<Subscription>) => {
     try {
       const updated = await databaseService.update(id, updates);
+
+      // Record snapshot if cost or status changed
+      if (
+        updates.monthlyCost !== undefined ||
+        updates.yearlyCost !== undefined ||
+        updates.status !== undefined
+      ) {
+        // We use the full updated object for the snapshot
+        costHistoryService.recordSnapshot(updated).catch(console.error);
+      }
+
       setSubscriptions((prev) => prev.map((s) => (s.id === id ? updated : s)));
       toast.success('Tool erfolgreich aktualisiert');
       return updated;
@@ -71,7 +99,7 @@ export const useSubscriptions = () => {
         prev.map((s) => {
           const updated = updatedTools.find((u) => u.id === s.id);
           return updated ? updated : s;
-        }),
+        })
       );
       toast.success(`${ids.length} Tools erfolgreich aktualisiert`);
     } catch (err) {

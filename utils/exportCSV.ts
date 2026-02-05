@@ -10,9 +10,9 @@ export const exportToCSV = (subscriptions: Subscription[]) => {
     'Jährliche Kosten': sub.yearlyCost,
     Status: sub.status,
     Owner: sub.owner,
-    'Verlängerung': sub.renewalDate,
-    'Kündigung': sub.cancellationDate || '',
-    'Lizenzen': sub.quantity || 1,
+    Verlängerung: sub.renewalDate,
+    Kündigung: sub.cancellationDate || '',
+    Lizenzen: sub.quantity || 1,
     'Monate/Jahr': sub.monthsPerYear || 12,
     URL: sub.url,
   }));

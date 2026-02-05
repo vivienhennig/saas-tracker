@@ -7,7 +7,7 @@ interface ToolIconProps {
 }
 
 export const ToolIcon: React.FC<ToolIconProps> = ({ name, url, className = '' }) => {
-  const [imgSource, setImgSource] = useState<'clearbit' | 'google' | 'fallback'>('clearbit');
+  const [imgSource, setImgSource] = useState<'clearbit' | 'google' | 'fallback'>('google');
 
   // Helper to extract domain from URL or name
   const getDomain = () => {
@@ -123,19 +123,19 @@ export const ToolIcon: React.FC<ToolIconProps> = ({ name, url, className = '' })
 
   return (
     <div className={`relative flex items-center justify-center overflow-hidden ${className}`}>
-      {imgSource === 'clearbit' && (
-        <img
-          src={clearbitUrl}
-          alt={`${name} logo`}
-          className="h-full w-full object-cover"
-          onError={() => setImgSource('google')}
-        />
-      )}
-
       {imgSource === 'google' && (
         <img
           src={googleUrl}
           alt={`${name} favicon`}
+          className="h-full w-full object-cover"
+          onError={() => setImgSource('clearbit')}
+        />
+      )}
+
+      {imgSource === 'clearbit' && (
+        <img
+          src={clearbitUrl}
+          alt={`${name} logo`}
           className="h-full w-full object-cover"
           onError={() => setImgSource('fallback')}
         />

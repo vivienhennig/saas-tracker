@@ -11,27 +11,27 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
       label: 'Monatliche Ausgaben',
       value: `${(stats.totalMonthly || 0).toLocaleString('de-DE')} €`,
       color:
-        'text-k5-digitalBlue dark:text-[#5c4aff] dark:drop-shadow-[0_0_8px_rgba(92,74,255,0.8)]',
-      glow: 'shadow-k5-digitalBlue/10 dark:shadow-[0_0_30px_-5px_rgba(92,74,255,0.3)] dark:border-[#5c4aff]/30',
+        'text-k5-digitalBlue dark:text-[#5c4aff] dark:drop-shadow-[0_0_4px_rgba(92,74,255,0.4)]',
+      glow: 'shadow-k5-digitalBlue/10 dark:shadow-[0_0_15px_-5px_rgba(92,74,255,0.15)] dark:border-[#5c4aff]/30',
     },
     {
       label: 'Jährliche Verpflichtung',
       value: `${(stats.totalYearly || 0).toLocaleString('de-DE')} €`,
-      color: 'text-k5-deepBlue dark:text-white dark:drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]',
-      glow: 'shadow-k5-deepBlue/10 dark:shadow-[0_0_30px_-5px_rgba(255,255,255,0.1)] dark:border-white/20',
+      color: 'text-k5-deepBlue dark:text-white dark:drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]',
+      glow: 'shadow-k5-deepBlue/10 dark:shadow-[0_0_15px_-5px_rgba(255,255,255,0.08)] dark:border-white/20',
     },
     {
       label: 'Aktiver Stack',
       value: stats.activeTools,
       color:
-        'text-k5-digitalBlue dark:text-[#ccff00] dark:drop-shadow-[0_0_8px_rgba(204,255,0,0.8)]',
-      glow: 'shadow-k5-digitalBlue/10 dark:shadow-[0_0_30px_-5px_rgba(204,255,0,0.3)] dark:border-[#ccff00]/30',
+        'text-k5-digitalBlue dark:text-[#ccff00] dark:drop-shadow-[0_0_4px_rgba(204,255,0,0.4)]',
+      glow: 'shadow-k5-digitalBlue/10 dark:shadow-[0_0_15px_-5px_rgba(204,255,0,0.15)] dark:border-[#ccff00]/30',
     },
     {
       label: 'Anstehende Verlängerungen',
       value: stats.upcomingRenewals,
-      color: 'text-k5-sand dark:text-[#ff00ff] dark:drop-shadow-[0_0_8px_rgba(255,0,255,0.8)]',
-      glow: 'shadow-k5-sand/10 dark:shadow-[0_0_30px_-5px_rgba(255,0,255,0.3)] dark:border-[#ff00ff]/30',
+      color: 'text-k5-sand dark:text-[#ff00ff] dark:drop-shadow-[0_0_4px_rgba(255,0,255,0.4)]',
+      glow: 'shadow-k5-sand/10 dark:shadow-[0_0_15px_-5px_rgba(255,0,255,0.15)] dark:border-[#ff00ff]/30',
     },
   ];
 

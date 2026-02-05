@@ -80,7 +80,7 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
 
   return (
     <div id="analytics" className="mb-12 grid grid-cols-1 gap-8 lg:grid-cols-2">
-      <div className="rounded-2xl border border-k5-deepBlue/5 bg-gradient-to-br from-white to-k5-sand/5 p-8 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-k5-digitalBlue/20 hover:shadow-xl dark:border-white/5 dark:from-black/40 dark:to-black/40 dark:hover:shadow-[0_0_20px_rgba(92,74,255,0.1)]">
+      <div className="rounded-2xl border border-k5-deepBlue/5 bg-gradient-to-br from-white to-k5-sand/5 p-8 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-k5-digitalBlue/20 hover:shadow-xl dark:border-white/10 dark:from-k5-deepBlue dark:to-k5-deepBlue/80 dark:hover:shadow-[0_0_20px_rgba(92,74,255,0.1)]">
         <h3 className="mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-k5-sand dark:text-k5-sand/60">
           Verteilung nach Kategorien
         </h3>
@@ -97,7 +97,7 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
                 dataKey="value"
                 stroke="none"
                 style={{
-                  filter: darkMode ? 'drop-shadow(0 0 10px rgba(92, 74, 255, 0.4))' : 'none',
+                  filter: darkMode ? 'drop-shadow(0 0 4px rgba(92, 74, 255, 0.2))' : 'none',
                 }}
               >
                 {categoryData.map((_entry, index) => (
@@ -139,7 +139,7 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
         </div>
       </div>
 
-      <div className="rounded-2xl border border-k5-deepBlue/5 bg-gradient-to-br from-white to-k5-sand/5 p-8 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-k5-digitalBlue/20 hover:shadow-xl dark:border-white/5 dark:from-black/40 dark:to-black/40 dark:hover:shadow-[0_0_20px_rgba(204,255,0,0.1)]">
+      <div className="rounded-2xl border border-k5-deepBlue/5 bg-gradient-to-br from-white to-k5-sand/5 p-8 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-k5-digitalBlue/20 hover:shadow-xl dark:border-white/10 dark:from-k5-deepBlue dark:to-k5-deepBlue/80 dark:hover:shadow-[0_0_20px_rgba(204,255,0,0.1)]">
         <h3 className="mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-k5-sand dark:text-k5-sand/60">
           Einfluss der Top-Investitionen
         </h3>
@@ -160,13 +160,13 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
                   return { ...sub, fill: color };
                 })}
               layout="vertical"
-              margin={{ left: 10, right: 30, top: 0, bottom: 0 }}
+              margin={{ left: 60, right: 30, top: 0, bottom: 0 }}
             >
               <XAxis type="number" hide />
               <YAxis
                 dataKey="name"
                 type="category"
-                width={100}
+                width={150}
                 tick={{ fontSize: 11, fontWeight: 900, fill: darkMode ? '#fff' : '#052364' }}
                 axisLine={false}
                 tickLine={false}
@@ -190,7 +190,7 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
                 radius={[0, 8, 8, 0]}
                 barSize={32}
                 style={{
-                  filter: darkMode ? 'drop-shadow(0 0 8px rgba(204, 255, 0, 0.5))' : 'none',
+                  filter: darkMode ? 'drop-shadow(0 0 4px rgba(204, 255, 0, 0.25))' : 'none',
                 }}
               >
                 {
@@ -221,7 +221,7 @@ export const Analytics: React.FC<AnalyticsProps> = ({ subscriptions, darkMode })
         </div>
       </div>
 
-      <div className="col-span-1 rounded-2xl border border-k5-deepBlue/5 bg-gradient-to-br from-white to-k5-sand/5 p-8 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-k5-digitalBlue/20 hover:shadow-xl dark:border-white/5 dark:from-black/40 dark:to-black/40 dark:hover:shadow-[0_0_30px_rgba(0,229,255,0.1)] lg:col-span-2">
+      <div className="col-span-1 rounded-2xl border border-k5-deepBlue/5 bg-gradient-to-br from-white to-k5-sand/5 p-8 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-k5-digitalBlue/20 hover:shadow-xl dark:border-white/10 dark:from-k5-deepBlue dark:to-k5-deepBlue/80 dark:hover:shadow-[0_0_30px_rgba(0,229,255,0.1)] lg:col-span-2">
         <h3 className="mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-k5-sand dark:text-k5-sand/60">
           Kostentrend (Nächste 12 Monate)
         </h3>

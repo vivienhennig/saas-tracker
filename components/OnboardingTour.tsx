@@ -34,7 +34,10 @@ export const OnboardingTour: React.FC = () => {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
 
   useEffect(() => {
-    const tourSeen = localStorage.getItem('onboarding_seen');
+    // Check if tour has been seen before
+    const tourSeen = localStorage.getItem('saas-tracker-onboarding-seen');
+    console.log('Onboarding check:', tourSeen ? 'Already seen' : 'First time - will show tour');
+
     if (!tourSeen) {
       setTimeout(() => setCurrentStep(0), 1000);
     }
@@ -85,7 +88,8 @@ export const OnboardingTour: React.FC = () => {
 
   const handleComplete = () => {
     setCurrentStep(-1);
-    localStorage.setItem('onboarding_seen', 'true');
+    localStorage.setItem('saas-tracker-onboarding-seen', 'true');
+    console.log('Onboarding tour completed and saved to localStorage');
   };
 
   if (currentStep === -1 || !targetRect) return null;
