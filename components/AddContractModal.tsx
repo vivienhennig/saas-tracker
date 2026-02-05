@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Contract,
   ContractBillingCycle,
-  ContractCategory,
   Event,
 } from '../types';
 
